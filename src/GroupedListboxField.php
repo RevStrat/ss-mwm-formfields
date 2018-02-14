@@ -84,4 +84,43 @@ class GroupedListboxField extends ListboxField {
 
 		return $this->customise($properties)->renderWith($this->getTemplates());
 	}
+
+	public function isGrouped() {
+		$source = $this->getSourceAsArray();
+		foreach ($source as $top => $value) {
+			if (is_array($value))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Validate this field
+	 *
+	 * @param Validator $validator
+	 * @return bool
+	 */
+	public function validate($validator) {
+		if (!$this->isGrouped()) {
+			return parent::validate($validator);
+		}
+
+		$values = $this->value;
+		if (!$values) {
+			return true;
+		}
+
+		$source = $this->getSourceAsArray();
+		$possibleValues = array();
+		foreach ($source as $top => $values) {
+			$possibleValues = array_merge($possibleValues, $values);
+		}
+
+		foreach ($values as $key => $value) {
+			if (!array_key_exists($value, $possibleValues))
+				return false;
+		}
+
+		return true;
+	}
 }
